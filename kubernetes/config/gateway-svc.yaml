@@ -1,0 +1,86 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway-svc
+  labels:
+    app: gateway-svc
+spec:
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  selector:
+    app: gateway-svc-nodes
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway-svc-nodes
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gateway-svc-nodes
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+       maxUnavailable: 25%
+       maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: gateway-svc-nodes
+    spec:
+      containers:
+      - name: gateway-svc-cont
+        image: IMAGE_REGISTRY_PATH/rest:REVISION_ID
+        args: ["GatewaySvc"]
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 8080
+        resources:
+          requests:
+            cpu: "1000m"
+            memory: "512Mi"
+          limits:
+            cpu: "2000m"
+            memory: "1024Mi"
+        volumeMounts:
+          - name: log-data
+            mountPath: /var/log/oms
+        envFrom:
+          - configMapRef:
+              name: service-config
+        livenessProbe:
+          httpGet:
+            path: /status
+            port: 8080
+          initialDelaySeconds: 120
+          periodSeconds: 5
+          failureThreshold: 3
+          timeoutSeconds: 2
+        readinessProbe:
+          httpGet:
+            path: /status
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 2
+      volumes:
+        - name: log-data
+          emptyDir: {}
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: gateway-svc-scaler
+  namespace: default
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gateway-svc-nodes
+  minReplicas: 2
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 70

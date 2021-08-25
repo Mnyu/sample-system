@@ -1,0 +1,48 @@
+{% extends "app/base.html" %}
+{% block content %}
+
+<link rel="stylesheet" type="text/css" href="/static/css/login.css">
+
+<div class="container">
+  <div class="row">
+
+        <h2 style="text-align:center">{{userProfile.name}}</h2>
+        <h4 style="text-align:center">{{userProfile.id}}</h4>
+        <div class="col-md-12" style="padding:1em">
+          <h3>Contact Details</h3>
+              <ul class="list-group">
+                <li class="list-group-item"><p>Name : {{userProfile.contact.name}}</p></li>
+                <li class="list-group-item"><p>Email : {{userProfile.contact.email}}</p></li>
+                <li class="list-group-item"><p>Phone : {{userProfile.contact.telephone}}</p></li>
+              </ul>
+        </div>
+        <div class="col-md-12">
+          <h3>Address</h3>
+          <div class="well">
+              <p>{{userProfile.address.street}}</p>
+              <p>{{userProfile.address.area}}</p>
+              <p>{{userProfile.address.city}}</p>
+              <p>{{userProfile.address.state}}</p>
+              <p>{{userProfile.address.country}}</p>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+      <h3>Shipping Addresses</h3>
+      {% for address in userProfile.shippingAddresses %}
+        <div class="col-md-6">
+          <h4>Address {{ forloop.counter }}</h4>
+          <div class="well">
+              <p>{{address.street}}</p>
+              <p>{{address.area}}</p>
+              <p>{{address.city}}</p>
+              <p>{{address.state}}</p>
+              <p>{{address.country}}</p>
+          </div>
+        </div>
+      {% endfor %}
+      </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends "app/base.html" %}
+{% block content %}
+
+<style>
+  pre{
+      white-space: pre-wrap;
+  }
+  </style>
+
+<div class="container">
+    <h3 style="text-align:center;margin: 1em 0 2em 0;">Admin Dashboard</h3>
+
+    <div class="row">
+
+        <div class="col-md-3">
+
+            <div>
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <a href="/serviceStatus">Service Status</a>
+                    </li>
+                    <li class="list-group-item">
+                        <a href="/registry">Registry Status</a>
+                    </li>
+                    <!--<li class="list-group-item">-->
+                        <!--<a href="/register">Register/Update Service</a>-->
+                    <!--</li>-->
+                </ul>
+            </div>
+
+            <div style="padding:1em 0">
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <a href="/deleteTestData">Delete Data</a>
+                    </li>
+                    <li class="list-group-item">
+                        <form action="/createTestData" method="post">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label>User Count:</label>
+                                <input type="number" class="form-control" name="userCount" value="100">
+                            </div>
+                            <div class="form-group">
+                                <label>Product Count:</label>
+                                <input type="number" class="form-control" name="productCount" value="100">
+                            </div>
+                            <button class="btn btn-primary" type="submit" class="btn btn-default">Create Data</button>
+                        </form>
+                    </li>
+                    <li class="list-group-item">
+                        <a href="/userAuthTable">User Auth Data</a>
+                    </li>
+                    <li class="list-group-item">
+                        <a href="/inventoryTable">Inventory Data</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-md-9 well">
+            <div style="width:100%; min-height:405px">
+                <div>{{message|safe}}</div>
+                <div class="container">
+                {% for auth in authList %}
+                    <div class="caption">
+                        <p><span>{{auth.id}}</span>,&nbsp<span>{{auth.name}},&nbsp<span>{{auth.password}}</span></p>
+                    </div>
+                {% endfor %}
+                </div>
+
+            </div>
+        </div>
+
+
+    </div>
+</div>
+
+{% endblock %}

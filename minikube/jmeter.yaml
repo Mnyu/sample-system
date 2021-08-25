@@ -1,0 +1,20 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: jmeter
+spec:
+  template:
+    spec:
+      containers:
+      - name: jmeter
+        image: ntw/jmeter
+#        ------  Command for Debugging ------
+#        command: ["/usr/jmeter/bin/jmeter","-n","-t","/usr/jmeter-data/test-plan.jmx","-Jusers=1","-Jcount=1","-Lorg.apache.http=DEBUG","-DREST_HOST=$(REST_HOST)","-DREST_PORT=$(REST_PORT)"]
+        command: ["/usr/jmeter/bin/jmeter","-n","-t","/usr/jmeter-data/test-plan.jmx","-Jusers=4","-Jcount=30","-LERROR","-DREST_HOST=$(REST_HOST)","-DREST_PORT=$(REST_PORT)"]
+        imagePullPolicy: Never
+        envFrom:
+          - configMapRef:
+              name: web-config
+      restartPolicy: Never
+  backoffLimit: 4

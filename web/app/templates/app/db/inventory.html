@@ -1,0 +1,12 @@
+{% extends "app/base.html" %}
+{% block content %}
+
+    <div class="container">
+    {% for inventory in inventoryList %}
+        <div class="caption">
+            <p><span>{{inventory.productId}}</span>,&nbsp<span>{{inventory.quantity}}</span></p>
+        </div>
+    {% endfor %}
+    </div>
+
+{% endblock %}

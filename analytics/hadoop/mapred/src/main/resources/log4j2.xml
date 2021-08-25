@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="time=%d{yyy-MM-dd HH:mm:ss.SSS zzz}; level=%-5level; threadId=%t; class=%logger{36}; message=%msg%n" />
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Logger name="com.ntw.oms" level="debug" additivity="false">
+            <AppenderRef ref="Console" />
+        </Logger>
+        <Root level="all">
+            <AppenderRef ref="Console" />
+        </Root>
+    </Loggers>
+</configuration>

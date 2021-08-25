@@ -1,0 +1,10 @@
+.idea
+*.iml
+*.ipr
+
+*.log
+
+target
+node_modules
+node
+dist

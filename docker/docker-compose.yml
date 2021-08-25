@@ -1,0 +1,269 @@
+############################################################################
+# Copyright 2020 Anurag Yadav (anurag.yadav@newtechways.com)               #
+#                                                                          #
+# Licensed under the Apache License, Version 2.0 (the "License");          #
+# you may not use this file except in compliance with the License.         #
+# You may obtain a copy of the License at                                  #
+#                                                                          #
+#     http:#www.apache.org/licenses/LICENSE-2.0                            #
+#                                                                          #
+# Unless required by applicable law or agreed to in writing, software      #
+# distributed under the License is distributed on an "AS IS" BASIS,        #
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. #
+# See the License for the specific language governing permissions and      #
+# limitations under the License.                                           #
+############################################################################
+
+version: '3.5'
+
+networks:
+  mynet1:
+    name: mynet1
+
+
+services:
+
+  postgres:
+    build:
+      context: ./postgres
+      dockerfile: Dockerfile
+    image: ntw/postgres
+    container_name: postgres-1
+    hostname: postgres-1
+    networks:
+      - mynet1
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - ./logs/postgres-1:/var/log/postgresql
+      - ./data/postgres-1:/var/lib/postgresql/data
+    command: postgres -c shared_buffers=128MB -c max_connections=50
+
+
+  cassandra:
+    build:
+      context: ./cassandra
+      dockerfile: Dockerfile
+    image: ntw/cassandra
+    container_name: cassandra-1
+    hostname: cassandra-1
+    networks:
+      - mynet1
+    ports:
+      - "9042:9042"
+    environment:
+      - JVM_OPTS=-Xms512M -Xmx1024M
+      - SCHEMA_SEED_INSTANCE=cassandra-1
+    volumes:
+      - ./logs/cassandra-1:/var/log/cassandra
+      - ./data/cassandra-1:/var/lib/cassandra
+    entrypoint: /docker-entrypoint-second.sh
+
+
+  eureka:
+    build:
+      context: ./eureka
+      dockerfile: Dockerfile
+    image: ntw/eureka
+    container_name: eureka-1
+    hostname: eureka-1
+    networks:
+      - mynet1
+    ports:
+      - "8761:8761"
+    env_file: .env
+    environment:
+      - JAVA_OPTIONS=-Xmx512M
+      - server.port=8761
+      - eureka.client.registerWithEureka=false
+      - eureka.client.fetchRegistry=false
+    volumes:
+      - ./logs/eureka-1:/usr/local/tomcat/logs
+
+
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: zipkin-1
+    hostname: zipkin-1
+    networks:
+      - mynet1
+    ports:
+      - "9411:9411"
+
+
+  lb-web:
+    build:
+      context: ./lb-web
+      dockerfile: Dockerfile
+    image: ntw/lb-web
+    container_name: lb-web
+    networks:
+      - mynet1
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - SERVER_HOSTS=web-1
+      - SERVER_PORT=8000
+      - USE_SSL=false
+    volumes:
+      - ./logs/lb-web:/var/log/oms
+
+
+  lb-rest:
+    build:
+      context: ./lb-rest
+      dockerfile: Dockerfile
+    image: ntw/lb-rest
+    container_name: lb-rest
+    networks:
+      - mynet1
+    ports:
+      - "81:80"
+    environment:
+      - SERVER_HOSTS=gateway-svc-1
+      - SERVER_PORT=8080
+    volumes:
+      - ./logs/lb-rest:/var/log/oms
+
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    image: ntw/web
+    container_name: web-1
+    hostname: web-1
+    networks:
+      - mynet1
+    ports:
+      - "8000:8000"
+    env_file: .env
+    volumes:
+      - ./logs/web-1:/var/log/oms
+    command: python3 manage.py runserver 0.0.0.0:8000
+
+
+  rest:
+    build:
+      context: ./rest
+      dockerfile: Dockerfile
+    image: ntw/rest
+    container_name: rest-build
+
+
+  gateway-svc:
+    image: ntw/rest
+    container_name: gateway-svc-1
+    hostname: gateway-svc-1
+    networks:
+      - mynet1
+    ports:
+      - "8080:8080"
+      - "6000:6005"
+    env_file: .env
+    environment:
+      - eureka.instance.hostname=gateway-svc-1
+      - server.threadPool.threads.maximum=20
+    volumes:
+      - ./logs/rest-1:/var/log/oms
+    entrypoint: /usr/bin/docker-entrypoint.sh GatewaySvc
+
+  admin-svc:
+    image: ntw/rest
+    container_name: admin-svc-1
+    hostname: admin-svc-1
+    networks:
+      - mynet1
+    ports:
+      - "8081:8080"
+      - "6001:6005"
+    env_file: .env 
+    environment:
+      - eureka.instance.hostname=admin-svc-1
+    volumes:
+      - ./logs/rest-1:/var/log/oms
+    entrypoint: /usr/bin/docker-entrypoint.sh AdminSvc
+
+  auth-svc:
+    image: ntw/rest
+    container_name: auth-svc-1
+    hostname: auth-svc-1
+    networks:
+      - mynet1
+    ports:
+      - "8082:8080"
+      - "6002:6005"
+    env_file: .env 
+    environment:
+      - eureka.instance.hostname=auth-svc-1
+    volumes:
+      - ./logs/rest-1:/var/log/oms
+    entrypoint: /usr/bin/docker-entrypoint.sh AuthSvc
+
+  user-profile-svc:
+    image: ntw/rest
+    container_name: user-profile-svc-1
+    hostname: user-profile-svc-1
+    networks:
+      - mynet1
+    ports:
+      - "8083:8080"
+      - "6003:6005"
+    env_file: .env 
+    environment:
+      - eureka.instance.hostname=user-profile-svc-1
+    volumes:
+      - ./logs/rest-1:/var/log/oms
+    entrypoint: /usr/bin/docker-entrypoint.sh UserProfileSvc
+
+  product-svc:
+    image: ntw/rest
+    container_name: product-svc-1
+    hostname: product-svc-1
+    networks:
+      - mynet1
+    ports:
+      - "8084:8080"
+      - "6004:6005"
+    env_file: .env 
+    environment:
+      - eureka.instance.hostname=product-svc-1
+    volumes:
+      - ./logs/rest-1:/var/log/oms
+    entrypoint: /usr/bin/docker-entrypoint.sh ProductSvc
+
+  order-svc:
+    image: ntw/rest
+    container_name: order-svc-1
+    hostname: order-svc-1
+    networks:
+      - mynet1
+    ports:
+      - "8085:8080"
+      - "6005:6005"
+    env_file: .env 
+    environment:
+      - eureka.instance.hostname=order-svc-1
+    volumes:
+      - ./logs/rest-1:/var/log/oms
+    entrypoint: /usr/bin/docker-entrypoint.sh OrderSvc
+
+  inventory-svc:
+    image: ntw/rest
+    container_name: inventory-svc-1
+    hostname: inventory-svc-1
+    networks:
+      - mynet1
+    ports:
+      - "8086:8080"
+      - "6006:6005"
+    env_file: .env 
+    environment:
+      - eureka.instance.hostname=inventory-svc-1
+    volumes:
+      - ./logs/rest-1:/var/log/oms
+    entrypoint: /usr/bin/docker-entrypoint.sh InventorySvc

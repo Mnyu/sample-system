@@ -1,0 +1,36 @@
+{% extends "app/base.html" %}
+{% block content %}
+
+    <link rel="stylesheet" type="text/css" href="/static/css/products.css">
+
+    <div class="container">
+        <!-- --------- Product Grid ----------------------  -->
+        <div class="row">
+            <div style="text-align:center; padding:1em 0;">
+                <h3>Orders</h3>
+            </div>
+            {% for order in orders %}
+            <div class="col-xs-12">
+                <h4><a class="label label-primary" href="/order?id={{ order.id }}">{{ order.id }}</a></h4>
+                <div class="row">
+                    {% for orderLine in order.orderLines %}
+                    <div class="col-sm-6 col-md-4">
+                        <div class="thumbnail product-thumbnail">
+                            <a href="{% url 'views.product' %}?id={{orderLine.product.id}}">
+                                <img src="{{orderLine.product.imageUrl}}" alt="product name"></a>
+                            <div class="caption">
+                                <h3 id="name">{{orderLine.productId}}</h3>
+                                <p>{{orderLine.quantity}}</p>
+                                <h3>&#x20b9 {{orderLine.product.price}}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+{% endblock %}
+

@@ -1,0 +1,17 @@
+{
+  "name": "mytemppack",
+  "version": "1.0.0",
+  "description": "some rand desc",
+  "main": "index.js",
+  "dependencies": {
+    "bootstrap": "^3.3.7",
+    "jquery": "^3.2.1",
+    "js-cookie": "^2.1.4"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Anurag Yadav",
+  "license": "ISC"
+}

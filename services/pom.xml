@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                              http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.ntw</groupId>
+    <artifactId>oms</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0</version>
+    <name>Order Management Application Project</name>
+
+    <properties>
+      <install.dir>${env.HOME}/Programs/jetty-9.4.18</install.dir>
+    </properties>
+    
+    <modules>
+      <module>CommonLib</module>
+      <module>AdminSvc</module>
+      <module>AuthSvc</module>
+      <module>GatewaySvc</module>
+      <module>ProductSvc</module>
+      <module>OrderSvc</module>
+      <module>InventorySvc</module>
+      <module>UserProfileSvc</module>
+	  <module>DiscoverySvc</module>
+  </modules>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <source>1.8</source>
+                        <target>1.8</target>
+                    </configuration>
+                </plugin>
+	    </plugins>
+        </pluginManagement>
+	<plugins>
+	  <plugin>
+	    <artifactId>maven-antrun-plugin</artifactId>
+	    <executions>
+	      <execution>
+		<id>copy_package</id>
+		<phase>package</phase>
+		<goals>
+		  <goal>run</goal>
+		</goals>
+		<configuration>
+		  <tasks>
+            <copy file="AdminSvc/target/AdminSvc.war" todir="target/"/>
+		    <copy file="AuthSvc/target/AuthSvc.war" todir="target/"/>
+		    <copy file="GatewaySvc/target/GatewaySvc.war" todir="target/"/>
+		    <copy file="ProductSvc/target/ProductSvc.war" todir="target/"/>
+		    <copy file="OrderSvc/target/OrderSvc.war" todir="target/"/>
+            <copy file="InventorySvc/target/InventorySvc.war" todir="target/"/>
+		    <copy file="UserProfileSvc/target/UserProfileSvc.war" todir="target/"/>
+			<copy file="DiscoverySvc/target/DiscoverySvc.jar" todir="target/"/>
+		  </tasks>
+		</configuration>
+	      </execution>
+	      <execution>
+		<id>copy_install</id>
+		<phase>install</phase>
+		<goals>
+		  <goal>run</goal>
+		</goals>
+		<configuration>
+		  <tasks>
+            <copy file="AdminSvc/target/AdminSvc.war" todir="${install.dir}/webapps/"/>
+		    <copy file="AuthSvc/target/AuthSvc.war" todir="${install.dir}/webapps/"/>
+		    <copy file="GatewaySvc/target/GatewaySvc.war" todir="${install.dir}/webapps/"/>
+		    <copy file="ProductSvc/target/ProductSvc.war" todir="${install.dir}/webapps/"/>
+		    <copy file="OrderSvc/target/OrderSvc.war" todir="${install.dir}/webapps/"/>
+            <copy file="InventorySvc/target/InventorySvc.war" todir="${install.dir}/webapps/"/>
+		    <copy file="UserProfileSvc/target/UserProfileSvc.war" todir="${install.dir}/webapps/"/>
+			<copy file="DiscoverySvc/target/DiscoverySvc.jar" todir="${install.dir}/webapps/"/>
+		  </tasks>
+		</configuration>
+	      </execution>
+	    </executions>
+	  </plugin>
+	</plugins>
+    </build>
+    
+</project>

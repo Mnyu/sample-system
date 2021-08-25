@@ -1,0 +1,18 @@
+{% extends "app/base.html" %}
+{% block content %}
+
+    <div class="container">
+    {% for auth in authList %}
+        <div class="caption">
+            <p>
+                <span>{{auth.id}},&nbsp</span>
+                <span>{{auth.name}},&nbsp</span>
+                <span>{{auth.password}},&nbsp</span>
+                <span>{{auth.emailId}}</span>
+                <span>{{auth.roles}}</span>
+            </p>
+        </div>
+    {% endfor %}
+    </div>
+
+{% endblock %}

@@ -1,0 +1,54 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: service-config
+  labels:
+    app: rest
+data:
+  server.port: "8080"
+  eureka.client.registerWithEureka: "false"
+  eureka.client.fetchRegistry: "false"
+  ribbon.eureka.enabled: "false"
+  GatewaySvc.ribbon.listOfServers: "http://gateway-svc:80"
+  AdminSvc.ribbon.listOfServers: "http://admin-svc:80"
+  AuthSvc.ribbon.listOfServers: "http://auth-svc:80"
+  UserProfileSvc.ribbon.listOfServers: "http://user-profile-svc:80"
+  ProductSvc.ribbon.listOfServers: "http://product-svc:80"
+  OrderSvc.ribbon.listOfServers: "http://order-svc:80"
+  InventorySvc.ribbon.listOfServers: "http://inventory-svc:80"
+  database.type: SQL
+  database.cassandra.hosts: cassandra
+  database.cassandra.port: "9042"
+  database.cassandra.keySpace: oms
+  database.postgres.host: postgres
+  database.postgres.port: "5432"
+  database.postgres.schema: oms
+  database.postgres.user.name: postgres
+  database.postgres.user.password: postgres
+  server.log.path: "/var/log/oms"
+  server.log.level: WARN
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: web-config
+  labels:
+    app: web
+data:
+  REST_HOST: gateway-svc
+  REST_PORT: "80"
+  PYUI_LOG_FILE: "/var/log/oms/PyUi.log"
+  REGISTRY_URL: "#"
+  DJANGO_DEBUG: "True"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cassandra-config
+  labels:
+    app: cassandra
+data:
+  CASSANDRA_SEEDS: "cassandra-0.cassandra.default.svc.cluster.local"
+  SCHEMA_SEED_INSTANCE: "cassandra-0"

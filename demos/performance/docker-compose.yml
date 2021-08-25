@@ -1,0 +1,139 @@
+version: '3.5'
+
+services:
+
+  postgres:
+    image: ntw/postgres
+    container_name: postgres-1
+    hostname: postgres-1
+    network_mode: "host"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - ./logs/postgres-1:/var/log/postgresql
+      - ./data/postgres-1:/var/lib/postgresql/data
+    command: postgres -c shared_buffers=128MB -c max_connections=100
+
+  web:
+    image: ntw/web
+    container_name: web-1
+    hostname: web-1
+    network_mode: "host"
+    env_file: .env
+    volumes:
+      - ./logs/web-1:/var/log/oms
+    command: python3 manage.py runserver 0.0.0.0:8000
+
+  gateway-svc:
+    image: ntw/rest
+    container_name: gateway-svc-1
+    hostname: gateway-svc-1
+    network_mode: "host"
+    env_file: .env
+    environment:
+      - server.port=8080
+      - JMX_HOST=gateway-svc-1
+      - JMX_PORT=5550
+      - JSTATD_PORT=1090
+      - DEBUG_PORT=6000
+    volumes:
+      - ./logs/rest-1:/var/log/oms
+    entrypoint: /usr/bin/docker-entrypoint.sh GatewaySvc
+
+  admin-svc:
+    image: ntw/rest
+    container_name: admin-svc-1
+    hostname: admin-svc-1
+    network_mode: "host"
+    env_file: .env
+    environment:
+      - server.port=8081
+      - JMX_HOST=other-svc-1
+      - JMX_PORT=5551
+      - JSTATD_PORT=1091
+      - DEBUG_PORT=6001
+    volumes:
+      - ./logs/rest-1:/var/log/oms
+    entrypoint: /usr/bin/docker-entrypoint.sh AdminSvc
+
+  auth-svc:
+    image: ntw/rest
+    container_name: auth-svc-1
+    hostname: auth-svc-1
+    network_mode: "host"
+    env_file: .env
+    environment:
+      - server.port=8082
+      - JMX_HOST=auth-svc-1
+      - JMX_PORT=5552
+      - JSTATD_PORT=1092
+      - DEBUG_PORT=6002
+    volumes:
+      - ./logs/rest-1:/var/log/oms
+    entrypoint: /usr/bin/docker-entrypoint.sh AuthSvc
+
+  user-profile-svc:
+    image: ntw/rest
+    container_name: user-profile-svc-1
+    hostname: user-profile-svc-1
+    network_mode: "host"
+    env_file: .env
+    environment:
+      - server.port=8083
+      - JMX_HOST=other-svc-1
+      - JMX_PORT=5553
+      - JSTATD_PORT=1093
+      - DEBUG_PORT=6003
+    volumes:
+      - ./logs/rest-1:/var/log/oms
+    entrypoint: /usr/bin/docker-entrypoint.sh UserProfileSvc
+
+  product-svc:
+    image: ntw/rest
+    container_name: product-svc-1
+    hostname: product-svc-1
+    network_mode: "host"
+    env_file: .env
+    environment:
+      - server.port=8084
+      - JMX_HOST=other-svc-1
+      - JMX_PORT=5554
+      - JSTATD_PORT=1094
+      - DEBUG_PORT=6004
+    volumes:
+      - ./logs/rest-1:/var/log/oms
+    entrypoint: /usr/bin/docker-entrypoint.sh ProductSvc
+
+  order-svc:
+    image: ntw/rest
+    container_name: order-svc-1
+    hostname: order-svc-1
+    network_mode: "host"
+    env_file: .env
+    environment:
+      - server.port=8085
+      - JMX_HOST=other-svc-1
+      - JMX_PORT=5555
+      - JSTATD_PORT=1095
+      - DEBUG_PORT=6005
+    volumes:
+      - ./logs/rest-1:/var/log/oms
+    entrypoint: /usr/bin/docker-entrypoint.sh OrderSvc
+
+  inventory-svc:
+    image: ntw/rest
+    container_name: inventory-svc-1
+    hostname: inventory-svc-1
+    network_mode: "host"
+    env_file: .env
+    environment:
+      - server.port=8086
+      - JMX_HOST=other-svc-1
+      - JMX_PORT=5556
+      - JSTATD_PORT=1096
+      - DEBUG_PORT=6006
+    volumes:
+      - ./logs/rest-1:/var/log/oms
+    entrypoint: /usr/bin/docker-entrypoint.sh InventorySvc
+

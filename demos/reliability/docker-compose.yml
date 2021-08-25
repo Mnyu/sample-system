@@ -1,0 +1,184 @@
+version: '3.5'
+
+services:
+
+  postgres:
+    image: ntw/postgres
+    container_name: postgres
+    hostname: postgres
+    network_mode: "host"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - ./logs/postgres:/var/log/postgresql
+      - ./data/postgres:/var/lib/postgresql/data
+    command: postgres -c shared_buffers=128MB -c max_connections=50
+
+
+  cassandra-1:
+    image: ntw/cassandra
+    container_name: cassandra-1
+    hostname: cassandra-1
+    network_mode: "host"
+    environment:
+      - JVM_OPTS=-Xms512M -Xmx1024M
+      - SCHEMA_SEED_INSTANCE=cassandra-1
+      - REPLICATION_FACTOR=3
+    volumes:
+      - ./logs/cassandra:/var/log/cassandra
+      - ./data/cassandra:/var/lib/cassandra
+    entrypoint: /docker-entrypoint-second.sh
+
+  cassandra-2:
+    image: ntw/cassandra
+    container_name: cassandra-2
+    hostname: cassandra-2
+    network_mode: "host"
+    environment:
+      - JVM_OPTS=-Xms512M -Xmx1024M
+      - CASSANDRA_SEEDS=cassandra-1
+    volumes:
+      - ./logs/cassandra:/var/log/cassandra
+      - ./data/cassandra:/var/lib/cassandra
+    entrypoint: /docker-entrypoint-second.sh
+
+  cassandra-3:
+    image: ntw/cassandra
+    container_name: cassandra-3
+    hostname: cassandra-3
+    network_mode: "host"
+    environment:
+      - JVM_OPTS=-Xms512M -Xmx1024M
+      - CASSANDRA_SEEDS=cassandra-1
+    volumes:
+      - ./logs/cassandra:/var/log/cassandra
+      - ./data/cassandra:/var/lib/cassandra
+    entrypoint: /docker-entrypoint-second.sh
+
+
+  eureka-1:
+    image: ntw/eureka
+    container_name: eureka-1
+    hostname: eureka-1
+    network_mode: "host"
+    environment:
+      - JAVA_OPTIONS=-Xmx512M
+      - server.port=8761
+      - eureka.client.serviceUrl.defaultZone=http://eureka-2:8761/eureka,http://eureka-3:8761/eureka
+      - eureka.server.enableSelfPreservation=false
+      - eureka.server.responseCacheUpdateInvervalMs=50000
+      - eureka.server.evictionIntervalTimerInMs=10000
+    volumes:
+      - ./logs/eureka:/usr/local/tomcat/logs
+
+  eureka-2:
+    image: ntw/eureka
+    container_name: eureka-2
+    hostname: eureka-2
+    network_mode: "host"
+    environment:
+      - JAVA_OPTIONS=-Xmx512M
+      - server.port=8761
+      - eureka.client.serviceUrl.defaultZone=http://eureka-1:8761/eureka,http://eureka-3:8761/eureka
+    volumes:
+      - ./logs/eureka:/usr/local/tomcat/logs
+
+  eureka-3:
+    image: ntw/eureka
+    container_name: eureka-3
+    hostname: eureka-3
+    network_mode: "host"
+    environment:
+      - JAVA_OPTIONS=-Xmx512M
+      - server.port=8761
+      - eureka.client.serviceUrl.defaultZone=http://eureka-1:8761/eureka,http://eureka-2:8761/eureka
+    volumes:
+      - ./logs/eureka:/usr/local/tomcat/logs
+
+
+  web:
+    image: ntw/web
+    container_name: web
+    hostname: ${HOSTNAME}
+    network_mode: "host"
+    env_file: .env
+    environment:
+      - REST_HOST=lb-rest.lb-rest-fe.il7.asia-southeast1.lb.ntw-sample-sys.internal
+      - REST_PORT=80
+    volumes:
+      - ./logs/web:/var/log/oms
+    command: python3 manage.py runserver 0.0.0.0:8000
+
+
+  gateway-svc:
+    image: ntw/rest
+    container_name: gateway-svc
+    hostname: ${HOSTNAME}
+    network_mode: "host"
+    env_file: .env
+    environment:
+      - server.threadPool.threads.maximum=20
+    volumes:
+      - ./logs/gateway-svc:/var/log/oms
+    entrypoint: /usr/bin/docker-entrypoint.sh GatewaySvc
+
+  admin-svc:
+    image: ntw/rest
+    container_name: admin-svc
+    hostname: ${HOSTNAME}
+    network_mode: "host"
+    env_file: .env 
+    volumes:
+      - ./logs/admin-svc:/var/log/oms
+    entrypoint: /usr/bin/docker-entrypoint.sh AdminSvc
+
+  auth-svc:
+    image: ntw/rest
+    container_name: auth-svc
+    hostname: ${HOSTNAME}
+    network_mode: "host"
+    env_file: .env 
+    volumes:
+      - ./logs/auth-svc:/var/log/oms
+    entrypoint: /usr/bin/docker-entrypoint.sh AuthSvc
+
+  user-profile-svc:
+    image: ntw/rest
+    container_name: user-profile-svc
+    hostname: ${HOSTNAME}
+    network_mode: "host"
+    env_file: .env 
+    volumes:
+      - ./logs/user-profile-svc:/var/log/oms
+    entrypoint: /usr/bin/docker-entrypoint.sh UserProfileSvc
+
+  product-svc:
+    image: ntw/rest
+    container_name: product-svc
+    hostname: ${HOSTNAME}
+    network_mode: "host"
+    env_file: .env 
+    volumes:
+      - ./logs/product-svc:/var/log/oms
+    entrypoint: /usr/bin/docker-entrypoint.sh ProductSvc
+
+  order-svc:
+    image: ntw/rest
+    container_name: order-svc
+    hostname: ${HOSTNAME}
+    network_mode: "host"
+    env_file: .env 
+    volumes:
+      - ./logs/order-svc:/var/log/oms
+    entrypoint: /usr/bin/docker-entrypoint.sh OrderSvc
+
+  inventory-svc:
+    image: ntw/rest
+    container_name: inventory-svc
+    hostname: ${HOSTNAME}
+    network_mode: "host"
+    env_file: .env 
+    volumes:
+      - ./logs/inventory-svc:/var/log/oms
+    entrypoint: /usr/bin/docker-entrypoint.sh InventorySvc

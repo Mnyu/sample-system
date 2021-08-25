@@ -1,0 +1,100 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-profile-svc
+  labels:
+    app: user-profile-svc
+spec:
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  selector:
+    app: user-profile-svc
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-profile-svc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-profile-svc  
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+       maxUnavailable: 25%
+       maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: user-profile-svc
+    spec:
+      initContainers:
+      - name: wait-for-cassandra
+        image: cassandra
+        command: [ '/bin/bash','-c', 'until echo exit | cqlsh cassandra; do echo waiting for cassandra; sleep 1; done;' ]
+      containers:
+      - name: userprofile
+        image: ntw/rest
+        args: ["UserProfileSvc"]
+        imagePullPolicy: Never
+        ports:
+          - containerPort: 8080
+#        resources:
+#          requests:
+#            cpu: "50m"
+#            memory: "512Mi"
+#          limits:
+#            cpu: "200m"
+#            memory: "768Mi"
+        volumeMounts:
+          - name: log-data
+            mountPath: /var/log/oms
+        envFrom:
+          - configMapRef:
+              name: service-config
+        env:
+          - name: JAVA_OPTIONS
+            value: "-Xms256M -Xmx768M -XX:NewRatio=1 -XX:+UseConcMarkSweepGC -XX:SoftRefLRUPolicyMSPerMB=1"
+          - name: HOST_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+        livenessProbe:
+          httpGet:
+            path: /status
+            port: 8080
+          initialDelaySeconds: 90
+          periodSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /status
+            port: 8080
+          initialDelaySeconds: 90
+          periodSeconds: 3
+#      - name: flume
+#        image: asia.gcr.io/PROJECT_ID/flume:REVISION_ID
+#        volumeMounts:
+#          - name: log-data
+#            mountPath: /var/log/oms
+      volumes:
+        - name: log-data
+          emptyDir: {}
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: userprofile-scale
+  namespace: default
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: userprofile
+  minReplicas: 1
+  maxReplicas: 2
+  targetCPUUtilizationPercentage: 50

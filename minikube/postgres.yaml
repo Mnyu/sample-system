@@ -1,0 +1,48 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  clusterIP: None
+  ports:
+    - port: 5432
+      name: default
+  selector:
+    app: postgres
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: postgres-1
+  labels:
+    app: postgres
+spec:
+  containers:
+    - name: postgres-1
+      image: ntw/postgres
+      imagePullPolicy: Never      
+      ports:
+        - protocol: TCP
+          containerPort: 5432
+      volumeMounts:
+        - mountPath: "/var/lib/postgresql/data"
+          name: postgres-storage
+      env:
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: secret-config
+              key: postgres.user
+      env:
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: secret-config
+              key: postgres.password
+  volumes:
+    - name: postgres-storage
+      persistentVolumeClaim:
+        claimName: local-disk-postgres-claim

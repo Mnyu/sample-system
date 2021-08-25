@@ -1,0 +1,23 @@
+{
+    "instance": {
+        "hostName": "localhost",
+        "app": "RESTSERVICE",
+        "vipAddress": "RestSvc",
+        "secureVipAddress": "RestSvc",
+        "ipAddr": "192.168.1.4",
+        "status": "UP",
+        "port": {"$": "8080", "@enabled": "true"},
+        "securePort": {"$": "8443", "@enabled": "true"},
+        "healthCheckUrl": "http://localhost:8080/AdminSvc/status",
+        "statusPageUrl": "http://localhost:8080/AdminSvc/status",
+        "homePageUrl": "http://localhost:8080/AdminSvc/status",
+        "dataCenterInfo": {
+            "@class": "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo", 
+            "name": "MyOwn"
+        },
+        "leaseInfo": {
+            "renewalIntervalInSecs": 86400,
+	    "durationInSecs": 86400
+        }
+    }
+}
